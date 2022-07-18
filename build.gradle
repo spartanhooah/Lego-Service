@@ -1,0 +1,64 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.1'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'groovy'
+}
+
+group = 'net.frey.legos'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+	wiremock
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	spockVersion = '2.1-groovy-3.0'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'commons-codec:commons-codec:1.15'
+
+	compileOnly 'org.projectlombok:lombok'
+
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.codehaus.groovy:groovy:3.0.11'
+    testImplementation "org.spockframework:spock-spring:$spockVersion"
+	testImplementation "org.spockframework:spock-core:$spockVersion"
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.jupiter'
+		exclude group: 'org.mockito'
+		exclude group: 'org.hamcrest'
+		exclude group: 'org.assertj'
+		exclude group: 'org.skyscreamer'
+		exclude group: 'org.xmlunit'
+	}
+	testImplementation 'io.projectreactor:reactor-test'
+
+	wiremock 'com.github.tomakehurst:wiremock-jre8-standalone:2.33.2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+task wiremock(type: JavaExec) {
+	classpath = files configurations.wiremock.singleFile.absolutePath
+	args = ["--root-dir=wiremock", "--port=9091", "--global-response-templating", "--verbose"]
+}
